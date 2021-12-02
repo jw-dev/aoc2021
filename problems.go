@@ -5,7 +5,16 @@ import (
 	"strings"
 )
 
-func Split(input string) []int {
+func Split(input string) []string {
+	i := strings.Split(input, "\n")
+	for k := range i {
+		i[k] = strings.Trim(i[k], " ")
+	}
+
+	return i
+}
+
+func SplitToNum(input string) []int {
 	var nums []int
 
 	i := strings.Split(input, "\n")
@@ -23,7 +32,7 @@ func Split(input string) []int {
 }
 
 func Day01(input string, first bool) string {
-	nums := Split(input)
+	nums := SplitToNum(input)
 
 	if first {
 		tot := 0
@@ -54,5 +63,56 @@ func Day01(input string, first bool) string {
 			sum = newSum
 		}
 		return strconv.Itoa(tot)
+	}
+}
+
+func Day02(input string, first bool) string {
+	type com struct {
+		dir  string
+		amnt int
+	}
+
+	commands := []com{}
+	for _, line := range Split(input) {
+		spl := strings.Split(line, " ")
+		n, _ := strconv.Atoi(spl[1])
+		commands = append(commands, com{
+			dir:  spl[0],
+			amnt: n,
+		})
+	}
+
+	if first {
+		horiz := 0
+		vert := 0
+		for _, val := range commands {
+			switch val.dir {
+			case "forward":
+				horiz = horiz + val.amnt
+			case "down":
+				vert = vert + val.amnt
+			case "up":
+				vert = vert - val.amnt
+			}
+		}
+
+		return strconv.Itoa(horiz * vert)
+	} else {
+		horiz := 0
+		vert := 0
+		aim := 0
+		for _, val := range commands {
+			switch val.dir {
+			case "forward":
+				horiz = horiz + val.amnt
+				vert = vert + aim*val.amnt
+			case "down":
+				aim = aim + val.amnt
+			case "up":
+				aim = aim - val.amnt
+			}
+		}
+
+		return strconv.Itoa(horiz * vert)
 	}
 }
