@@ -1,35 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
-
-func Split(input string) []string {
-	i := strings.Split(input, "\n")
-	for k := range i {
-		i[k] = strings.Trim(i[k], " ")
-	}
-
-	return i
-}
-
-func SplitToNum(input string) []int {
-	var nums []int
-
-	i := strings.Split(input, "\n")
-	for k := range i {
-		str := strings.Trim(i[k], " ")
-		n, err := strconv.Atoi(str)
-		if err != nil {
-			panic(err)
-		}
-
-		nums = append(nums, n)
-	}
-
-	return nums
-}
 
 func Day01(input string, first bool) string {
 	nums := SplitToNum(input)
@@ -114,5 +90,65 @@ func Day02(input string, first bool) string {
 		}
 
 		return strconv.Itoa(horiz * vert)
+	}
+}
+
+func Day03(input string, first bool) string {
+	lines := Split(input)
+	bits := len(lines[0])
+
+	getFreq := func(l []int, bits int) int {
+		freq := 0
+		for i := 0; i < bits; i++ {
+			sum := 0
+			for _, n := range l {
+				if n&(1<<i) > 0 {
+					sum = sum + 1
+					if sum >= int(math.Ceil(float64(len(l))/2.0)) {
+						freq = freq | (1 << i)
+					}
+				}
+			}
+		}
+		return freq
+	}
+
+	filter := func(l []int, f func(n int) bool) []int {
+		res := make([]int, 0)
+		for _, n := range l {
+			if f(n) {
+				res = append(res, n)
+			}
+		}
+		return res
+	}
+
+	nums := make([]int, 0)
+	for _, l := range lines {
+		nums = append(nums, Parse(l, 2, 64))
+	}
+
+	if first {
+		gamma := getFreq(nums, bits)
+		epsilon := (^gamma) & ((1 << bits) - 1)
+		return fmt.Sprintf("%v", gamma*epsilon)
+	} else {
+		oxy := make([]int, len(nums))
+		scrubber := make([]int, len(nums))
+		copy(oxy, nums)
+		copy(scrubber, nums)
+
+		for i := bits - 1; i >= 0; i-- {
+			if len(oxy) > 1 {
+				freq := getFreq(oxy, bits)
+				oxy = filter(oxy, func(n int) bool { return (freq & (1 << i)) == (n & (1 << i)) })
+			}
+
+			if len(scrubber) > 1 {
+				freq := getFreq(scrubber, bits)
+				scrubber = filter(scrubber, func(n int) bool { return (freq & (1 << i)) != (n & (1 << i)) })
+			}
+		}
+		return fmt.Sprintf("%v", oxy[0]*scrubber[0])
 	}
 }

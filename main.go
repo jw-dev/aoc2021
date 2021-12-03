@@ -11,7 +11,7 @@ import (
 )
 
 var Problems = []func(string, bool) string{
-	Day01, Day02,
+	Day01, Day02, Day03,
 }
 
 func main() {
